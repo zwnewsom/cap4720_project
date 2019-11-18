@@ -1,0 +1,159 @@
+<!doctype html>
+<html>
+<head>
+		<meta charset="utf-8" />
+		<title>Sample Shader</title>
+	<!-- Shaders -->
+	<script type="x-shader/x-vertex" id="vertexShader">
+		
+		precision highp float;
+		attribute vec3 position;
+		attribute vec3 normal;
+		attribute vec2 uv;
+
+		uniform vec3 materialColor;
+		uniform vec3 skyLight;
+		uniform vec3 groundLight;
+		uniform vec3 skyUp;
+
+		uniform mat4 projectionMatrix;
+		uniform mat4 modelViewMatrix;
+		uniform mat4 modelMatrix;
+		
+		varying vec3 reflectedColor;
+		varying vec2 vUV;
+		
+		void main() {
+
+			vUV = uv;
+			
+			vec3 N = normalize(vec3(vec4(normal, 0.0) * modelMatrix));
+
+			vec3 U = normalize(skyUp);
+
+			float w = 0.5 * (1.0 + dot(N, U));
+			
+			vec3 incidentLight = normalize(w * skyLight + (1.0 - w) * groundLight);
+
+			reflectedColor = incidentLight;
+
+			gl_Position = projectionMatrix *
+						  modelViewMatrix *
+						  vec4(position,1.0);
+		}
+	</script>
+	
+	<script type="x-shader/x-fragment" id="fragShader">
+		precision highp float;
+		
+		varying vec2 vUV;
+		varying vec3 reflectedColor;
+		uniform sampler2D concrete;
+
+		void main() {
+			
+			vec3 concreteTextureColor = texture2D(concrete, vUV).rgb;
+			gl_FragColor = vec4(reflectedColor * concreteTextureColor, 1.0);
+		}
+	
+	</script>
+	
+	<!-- End Shaders -->
+	<script src="https://threejs.org/build/three.min.js"></script>
+	<script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+	</head>
+	<body>
+	<h1 align="center">Assignment 5: Zach Newsom</h1>
+	<script type="text/javascript">
+	
+		"use strict";
+	let scene, object, camera, renderer;
+	let cameraControls; // Optional
+
+	let WIDTH  = window.innerWidth;
+	let HEIGHT = window.innerHeight;
+	
+	init();
+	render();
+
+	function init() {
+		scene = new THREE.Scene();
+		initRenderer();
+		initScene();
+		handleWindowResize();
+	}
+	
+
+	function render() {
+		renderer.render(scene, camera);
+	}
+
+	function initRenderer() {
+		renderer = new THREE.WebGLRenderer({ antialias: true });
+		renderer.setSize(WIDTH, HEIGHT);
+		renderer.setClearColor (0x888888, 1);
+		document.body.appendChild(renderer.domElement);
+	}
+	function initScene() {
+
+		initCamera();
+		
+		// set up the sphere lets
+		let radius = 2, segments = 16, rings = 16;
+		let geometry = new THREE.SphereBufferGeometry(radius, segments, rings);
+		
+						
+		let uniforms = {
+			materialColor : new THREE.Uniform(new THREE.Color('white')),
+			skyLight : new THREE.Uniform(new THREE.Color('blue')),
+			groundLight : new THREE.Uniform(new THREE.Color('rgb(57, 255, 20)')),
+			skyUp : new THREE.Uniform(new THREE.Vector3(0.0, 1.0, 0.0)),
+			concrete: {
+				type: "t", // a Sampler2D
+				value: new THREE.TextureLoader().load ("concrete.jpg",function(texture){render();}) 
+			}
+		}
+		
+		// create the sphere's material
+		let material = new THREE.RawShaderMaterial({
+			uniforms:     	uniforms,
+			vertexShader:   document.getElementById('vertexShader' ).textContent,
+			fragmentShader: document.getElementById( 'fragShader' ).textContent 
+		});
+
+		object = new THREE.Mesh(geometry, material);
+		scene.add(object);
+	}	
+	function initCamera() {
+		camera = new THREE.PerspectiveCamera(50, WIDTH / HEIGHT, 1, 10);
+		camera.position.set(0, 3.5, 5);
+		camera.lookAt(scene.position);
+		cameraControls = new THREE.OrbitControls ( 
+			camera, renderer.domElement
+		);
+		cameraControls.addEventListener("change",
+			function(){
+				camera.updateProjectionMatrix();
+				render();
+			}
+		);
+	}
+	
+	function handleWindowResize(){
+		window.addEventListener (
+			"resize",
+			function () {
+				WIDTH = window.innerWidth ;
+				HEIGHT = window.innerHeight;
+				renderer.setSize(WIDTH,HEIGHT);
+				camera.aspect = WIDTH/HEIGHT;
+				camera.updateProjectionMatrix();
+				render();
+			}
+		);
+	}
+	</script>
+		
+</body>
+	
+</html>
