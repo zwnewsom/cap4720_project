@@ -1,0 +1,13 @@
+# Blender MTL File: 'furniture.blend'
+# Material Count: 1
+
+newmtl Material
+Ns 38.496377
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.031818 0.031818 0.031818
+Ke 0.0 0.0 0.0
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd /Users/faye/Documents/School/Fall 2019/CAP4720/cap4720_project/assets/textures/gray_linen.png

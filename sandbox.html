@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Assignment 3</title>
+
+    <script src=https://threejs.org/build/three.js> </script> <script
+        src="https://threejs.org/examples/js/loaders/OBJLoader.js"></script>
+    <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://threejs.org/examples/js/loaders/MTLLoader.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    <!-- Shaders -->
+    <script type="x-shader/x-vertex" id="vertexShader">
+
+		precision highp float;
+		attribute vec3 position;
+		attribute vec3 normal;
+		attribute vec2 uv;
+
+		uniform vec3 materialColor;
+		uniform vec3 skyLight;
+		uniform vec3 groundLight;
+		uniform vec3 skyUp;
+
+		uniform mat4 projectionMatrix;
+		uniform mat4 modelViewMatrix;
+		uniform mat4 modelMatrix;
+		
+		varying vec3 reflectedColor;
+		varying vec2 vUV;
+		
+		void main() {
+
+			vUV = uv;
+			
+			vec3 N = normalize(vec3(vec4(normal, 0.0) * modelMatrix));
+
+			vec3 U = normalize(skyUp);
+
+			float w = 0.5 * (1.0 + dot(N, U));
+			
+			vec3 incidentLight = normalize(w * skyLight + (1.0 - w) * groundLight);
+
+			reflectedColor = incidentLight;
+
+			gl_Position = projectionMatrix *
+						  modelViewMatrix *
+						  vec4(position,1.0);
+		}
+	</script>
+
+    <script type="x-shader/x-fragment" id="fragShader">
+		precision highp float;
+		
+		varying vec2 vUV;
+		varying vec3 reflectedColor;
+		uniform sampler2D concrete;
+
+		void main() {
+			
+			vec3 concreteTextureColor = texture2D(concrete, vUV).rgb;
+			gl_FragColor = vec4(reflectedColor * concreteTextureColor, 1.0);
+		}
+	
+	</script>
+
+    <!-- End Shaders -->
+</head>
+
+<body>
+    <h3 align="center">Assignment 3: S. Faye Strawn</h3>
+
+
+    <script>
+        "use strict";
+        let WIDTH = window.innerWidth;
+        let HEIGHT = window.innerHeight;
+        let renderer, scene, camera, cameraControls, plant, object;
+        let keyLight, fillLight, backLight;
+
+        function init() {
+            scene = new THREE.Scene();
+            initRenderer();
+            initScene();
+        }
+
+        function initRenderer() {
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(WIDTH, HEIGHT);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setClearColor(0x888888, 1);
+            document.body.appendChild(renderer.domElement);
+        }
+
+        function initScene() {
+            initCamera();
+
+            let material = new THREE.MeshStandardMaterial();
+            let objLoader = new THREE.OBJLoader();
+            let mtlLoader = new THREE.MTLLoader();
+
+            mtlLoader.setPath('./assets/');
+            mtlLoader.load('room.mtl', function (mtls) {
+                mtls.preload();
+                objLoader.setMaterials(mtls);
+                objLoader.setPath('./assets/');
+                objLoader.load('room.obj', function (obj) {
+                    object = obj;
+                    obj.scale.set(0.1, 0.1, 0.1);
+                    scene.add(obj);
+                    render();
+                    createGUI();
+                    handleResize();
+                },
+                    function (xhr) {
+                        if (xhr.lengthComputable) {
+                            let percentComplete = (xhr.loaded / xhr.total) * 100;
+                            console.log('model' + Math.round(percentComplete, 2) + '% downloaded');
+                        }
+                    },
+                    function () { }
+                );
+            });
+
+            initLight();
+        }
+
+        function createGUI() {
+            let guiObject = {
+                geomType: "room",
+                light: {
+                    visible: true,
+                    intensity: keyLight.intensity,
+                    color: "#" + keyLight.color.getHexString()
+                },
+                transform: {
+                    scale: object.scale.x,
+                    x_position: object.position.x,
+                    y_position: object.position.y,
+                    z_position: object.position.z,
+                    rotation: object.rotation.y
+                }
+            };
+
+            let guiController = new dat.GUI();
+
+            let transformationsFolder = guiController.addFolder("Transformations");
+            transformationsFolder.add(guiObject.transform, "scale").min(0.1).max(2).step(0.1)
+                .name("Scale")
+                .onChange(function (val) {
+                    console.log("Scale is " + val);
+                    object.scale.set(val, val, val);
+                    render();
+                });
+
+            transformationsFolder.add(guiObject.transform, "x_position").min(-2).max(2).step(0.1)
+                .name("Position (X)")
+                .onChange(function (val) {
+                    console.log("X-Position is " + val);
+                    object.position.set(val, object.position.y, object.position.z);
+                    render();
+                });
+
+            transformationsFolder.add(guiObject.transform, "y_position").min(-2).max(2).step(0.1)
+                .name("Position (Y)")
+                .onChange(function (val) {
+                    console.log("Y-Position is " + val);
+                    object.position.set(object.position.x, val, object.position.z);
+                    render();
+                });
+
+            transformationsFolder.add(guiObject.transform, "z_position").min(-2).max(2).step(0.1)
+                .name("Position (Z)")
+                .onChange(function (val) {
+                    console.log("Z-Position is " + val);
+                    object.position.set(object.position.x, object.position.y, val);
+                    render();
+                });
+
+            transformationsFolder.add(guiObject.transform, "rotation").min(0).max(360).step(0.1)
+                .name("Rotation (Y)")
+                .onChange(function (val) {
+                    console.log("Y-Rotation is " + val);
+                    object.rotation.set(object.rotation.x, val, object.rotation.z);
+                    render();
+                });
+
+            let keyLightFolder = guiController.addFolder("Key Light");
+            keyLightFolder.add(guiObject.light, "visible")
+                .name("switchOn")
+                .onChange(function (flag) {
+                    console.log("Keylight is " + (flag ? "on" : "off"))
+                    keyLight.visible = flag;
+                    render();
+                });
+
+            keyLightFolder.add(guiObject.light, "intensity").min(0).max(1).step(0.1)
+                .name("Intensity")
+                .onChange(function (val) {
+                    console.log("Intensity: " + val);
+                    keyLight.intensity = val;
+                    render();
+                });
+
+            keyLightFolder.addColor(guiObject.light, "color")
+                .name("Color")
+                .onChange(function (hexstring) {
+                    console.log("Key Color " + hexstring);
+                    keyLight.color.set(hexstring)
+                    render();
+                });
+            keyLightFolder.close();
+
+            let fillLightFolder = guiController.addFolder("Fill Light");
+            fillLightFolder.add(guiObject.light, "visible")
+                .name("switchOn")
+                .onChange(function (flag) {
+                    console.log("fillLight is " + (flag ? "on" : "off"))
+                    fillLight.visible = flag;
+                    render();
+                });
+
+            fillLightFolder.add(guiObject.light, "intensity").min(0).max(1).step(0.1)
+                .name("Intensity")
+                .onChange(function (val) {
+                    console.log("Intensity: " + val);
+                    fillLight.intensity = val;
+                    render();
+                });
+
+            fillLightFolder.addColor(guiObject.light, "color")
+                .name("Color")
+                .onChange(function (hexstring) {
+                    console.log("Key Color " + hexstring);
+                    fillLight.color.set(hexstring)
+                    render();
+                });
+            fillLightFolder.close();
+
+            let backLightFolder = guiController.addFolder("Back Light");
+            backLightFolder.add(guiObject.light, "visible")
+                .name("switchOn")
+                .onChange(function (flag) {
+                    console.log("backLight is " + (flag ? "on" : "off"))
+                    backLight.visible = flag;
+                    render();
+                });
+
+            backLightFolder.add(guiObject.light, "intensity").min(0).max(1).step(0.1)
+                .name("Intensity")
+                .onChange(function (val) {
+                    console.log("Intensity: " + val);
+                    backLight.intensity = val;
+                    render();
+                });
+
+            backLightFolder.addColor(guiObject.light, "color")
+                .name("Color")
+                .onChange(function (hexstring) {
+                    console.log("Key Color " + hexstring);
+                    backLight.color.set(hexstring)
+                    render();
+                });
+            backLightFolder.close();
+
+
+        }
+
+        function handleResize() {
+            window.addEventListener("resize", function () {
+                WIDTH = window.innerWidth;
+                HEIGHT = window.innerHeight;
+                renderer.setSize(WIDTH, HEIGHT);
+                camera.aspect = WIDTH / HEIGHT;
+                camera.updateProjectionMatrix();
+                render();
+            });
+        }
+
+        function initCamera() {
+            camera = new THREE.PerspectiveCamera(50, WIDTH / HEIGHT, 1, 10);
+            camera.position.set(0, 3.5, 5);
+            camera.lookAt(scene.position);
+            cameraControls = new THREE.OrbitControls(camera, renderer.domElement);
+            cameraControls.addEventListener('change', function () {
+                camera.updateProjectionMatrix();
+                render();
+            });
+        }
+
+        function initLight() {
+            keyLight = new THREE.DirectionalLight(0xffbf80, 1.0);
+            keyLight.position.set(-1, 0.5, 1).normalize();
+
+            fillLight = new THREE.DirectionalLight(0x8080ff, 0.5);
+            fillLight.position.set(1, 0, 1).normalize();
+
+            backLight = new THREE.DirectionalLight(0xffffff, 0.5);
+            backLight.position.set(1, -0.5, -1).normalize();
+
+            scene.add(keyLight);
+            scene.add(fillLight);
+            scene.add(backLight);
+        }
+
+        function render() {
+            renderer.render(scene, camera);
+        }
+
+        init();
+        render();
+    </script>
+</body>
+
+</html>
