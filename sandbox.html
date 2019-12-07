@@ -76,11 +76,15 @@
         "use strict";
         let WIDTH = window.innerWidth;
         let HEIGHT = window.innerHeight;
-        let renderer, scene, camera, cameraControls, plant, object;
+        let renderer, scene, camera, cameraControls, plant, object, raycaster;
         let keyLight, fillLight, backLight;
+        var mouse = new THREE.Vector2(), INTERSECTED;
+		var radius = 100, theta = 0;
 
         function init() {
             scene = new THREE.Scene();
+            raycaster = new THREE.Raycaster();
+            document.addEventListener( 'mousemove', onDocumentMouseMove, false );
             initRenderer();
             initScene();
         }
@@ -101,11 +105,11 @@
             let mtlLoader = new THREE.MTLLoader();
 
             mtlLoader.setPath('./assets/');
-            mtlLoader.load('room.mtl', function (mtls) {
+            mtlLoader.load('environment.mtl', function (mtls) {
                 mtls.preload();
                 objLoader.setMaterials(mtls);
                 objLoader.setPath('./assets/');
-                objLoader.load('room.obj', function (obj) {
+                objLoader.load('environment.obj', function (obj) {
                     object = obj;
                     obj.scale.set(0.1, 0.1, 0.1);
                     scene.add(obj);
@@ -122,6 +126,29 @@
                     function () { }
                 );
             });
+
+            // mtlLoader.setPath('./assets/');
+            // mtlLoader.load('chair.mtl', function (mtls) {
+            //     mtls.preload();
+            //     objLoader.setMaterials(mtls);
+            //     objLoader.setPath('./assets/');
+            //     objLoader.load('chair.obj', function (obj) {
+            //         object = obj;
+            //         obj.scale.set(0.1, 0.1, 0.1);
+            //         scene.add(obj);
+            //         render();
+            //         createGUI();
+            //         handleResize();
+            //     },
+            //         function (xhr) {
+            //             if (xhr.lengthComputable) {
+            //                 let percentComplete = (xhr.loaded / xhr.total) * 100;
+            //                 console.log('model' + Math.round(percentComplete, 2) + '% downloaded');
+            //             }
+            //         },
+            //         function () { }
+            //     );
+            // });
 
             initLight();
         }
@@ -305,8 +332,36 @@
         }
 
         function render() {
+            // theta += 0.1;
+			// 	camera.position.x = radius * Math.sin( THREE.Math.degToRad( theta ) );
+			// 	camera.position.y = radius * Math.sin( THREE.Math.degToRad( theta ) );
+			// 	camera.position.z = radius * Math.cos( THREE.Math.degToRad( theta ) );
+			// 	camera.lookAt( scene.position );
+			// 	camera.updateMatrixWorld();
+
+				// find intersections
+				raycaster.setFromCamera( mouse, camera );
+				var intersects = raycaster.intersectObjects( scene.children );
+				if ( intersects.length > 0 ) {
+					if ( INTERSECTED != intersects[ 0 ].object ) {
+						if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+						INTERSECTED = intersects[ 0 ].object;
+						INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
+						INTERSECTED.material.emissive.setHex( 0xff0000 );
+					}
+				} else {
+					if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+					INTERSECTED = null;
+				}
+
             renderer.render(scene, camera);
         }
+
+        function onDocumentMouseMove( event ) {
+				event.preventDefault();
+				mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+				mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+			}
 
         init();
         render();
