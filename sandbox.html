@@ -102,7 +102,7 @@
         function initScene() {
             initCamera();
 
-            let material = new THREE.MeshStandardMaterial();
+            // let material = new THREE.MeshStandardMaterial();
             let objLoader = new THREE.OBJLoader();
             let mtlLoader = new THREE.MTLLoader();
 
@@ -112,7 +112,7 @@
                 objLoader.setMaterials(mtls);
                 objLoader.setPath('./assets/');
                 objLoader.load('chair.obj', function (obj) {
-                    object = obj;
+                    // object = obj;
                     obj.scale.set(0.1, 0.1, 0.1);
                     obj.traverse(function (child) {
                                 if ( child instanceof THREE.Mesh ) {
@@ -121,7 +121,7 @@
                             });
                     scene.add(obj);
                     render();
-                    createGUI();
+                    // createGUI();
                     handleResize();
                 },
                     function (xhr) {
@@ -164,28 +164,6 @@
                 );
             });
 
-            // mtlLoader.setPath('./assets/');
-            // mtlLoader.load('chair.mtl', function (mtls) {
-            //     mtls.preload();
-            //     objLoader.setMaterials(mtls);
-            //     objLoader.setPath('./assets/');
-            //     objLoader.load('chair.obj', function (obj) {
-            //         object = obj;
-            //         obj.scale.set(0.1, 0.1, 0.1);
-            //         scene.add(obj);
-            //         render();
-            //         createGUI();
-            //         handleResize();
-            //     },
-            //         function (xhr) {
-            //             if (xhr.lengthComputable) {
-            //                 let percentComplete = (xhr.loaded / xhr.total) * 100;
-            //                 console.log('model' + Math.round(percentComplete, 2) + '% downloaded');
-            //             }
-            //         },
-            //         function () { }
-            //     );
-            // });
 
             initLight();
         }
@@ -343,7 +321,7 @@
         }
 
         function initCamera() {
-            camera = new THREE.PerspectiveCamera(50, WIDTH / HEIGHT, 0.1, 100);
+            camera = new THREE.PerspectiveCamera(50, WIDTH / HEIGHT, 0.01, 1000);
             camera.position.set(0, 3.5, 5);
             camera.lookAt(scene.position);
             cameraControls = new THREE.OrbitControls(camera, renderer.domElement);
