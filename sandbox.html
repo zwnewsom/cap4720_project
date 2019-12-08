@@ -105,6 +105,30 @@
             let mtlLoader = new THREE.MTLLoader();
 
             mtlLoader.setPath('./assets/');
+            mtlLoader.load('chair.mtl', function (mtls) {
+                mtls.preload();
+                objLoader.setMaterials(mtls);
+                objLoader.setPath('./assets/');
+                objLoader.load('chair.obj', function (obj) {
+                    object = obj;
+                    obj.scale.set(0.1, 0.1, 0.1);
+                    scene.add(obj);
+                    render();
+                    //createGUI();
+                    handleResize();
+                },
+                    function (xhr) {
+                        if (xhr.lengthComputable) {
+                            let percentComplete = (xhr.loaded / xhr.total) * 100;
+                            console.log('model' + Math.round(percentComplete, 2) + '% downloaded');
+                        }
+                    },
+                    function () { }
+                );
+            });
+
+
+            mtlLoader.setPath('./assets/');
             mtlLoader.load('environment.mtl', function (mtls) {
                 mtls.preload();
                 objLoader.setMaterials(mtls);
@@ -306,7 +330,7 @@
         }
 
         function initCamera() {
-            camera = new THREE.PerspectiveCamera(50, WIDTH / HEIGHT, 1, 10);
+            camera = new THREE.PerspectiveCamera(50, WIDTH / HEIGHT, 0.1, 100);
             camera.position.set(0, 3.5, 5);
             camera.lookAt(scene.position);
             cameraControls = new THREE.OrbitControls(camera, renderer.domElement);
