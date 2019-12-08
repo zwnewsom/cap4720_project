@@ -85,7 +85,6 @@
             scene = new THREE.Scene();
             raycaster = new THREE.Raycaster();
             document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-
             	// ground
 				var mesh = new THREE.Mesh( new THREE.PlaneBufferGeometry( 2000, 2000 ), new THREE.MeshPhongMaterial( { color: 0x999999, depthWrite: false } ) );
 				mesh.rotation.x = - Math.PI / 2;
@@ -101,7 +100,7 @@
         function initRenderer() {
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.gammaOutput = true;
-				renderer.gammaFactor = 2.2;
+			renderer.gammaFactor = 2.2;
             renderer.setSize(WIDTH, HEIGHT);
             renderer.setPixelRatio(window.devicePixelRatio);
             renderer.setClearColor(0x888888, 1);
