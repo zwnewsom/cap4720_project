@@ -77,7 +77,6 @@
                 if (child instanceof THREE.Mesh) {
                   child.receiveShadow = true;
                   child.material.shininess = 0;
-                  console.log(child.material);
                 }
               });
               scene.add(obj);
@@ -115,9 +114,12 @@
         var light = new THREE.HemisphereLight(0xffffff, 0x444444);
         light.position.set(0, 20, 0);
         scene.add(light);
-        light = new THREE.DirectionalLight(0xffffff);
-        light.position.set(0, 20, 10);
+        var light = new THREE.HemisphereLight(0xffffff, 0x444444);
+        light.position.set(0, 10, 0);
         scene.add(light);
+        // light = new THREE.DirectionalLight(0xffffff);
+        // light.position.set(0, 20, 0);
+        // scene.add(light);
       }
 
       function handleWindowResize() {
