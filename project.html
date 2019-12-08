@@ -58,6 +58,7 @@
         });
         controls.addEventListener('dragend', function(event) {
           event.object.material.emissive.set(0x000000);
+          event.object.position.y = 0;
           cameraControls.enabled = true;
         });
       }
