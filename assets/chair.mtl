@@ -10,4 +10,4 @@ Ke 0.0 0.0 0.0
 Ni 1.450000
 d 1.000000
 illum 2
-map_Kd /Users/faye/Documents/School/Fall 2019/CAP4720/cap4720_project/assets/textures/gray_linen.png
+map_Kd textures/gray_linen.png

@@ -134,13 +134,14 @@
                 );
             });
 
-
-            mtlLoader.setPath('./assets/');
-            mtlLoader.load('environment.mtl', function (mtls) {
+            let envOLoader = new THREE.OBJLoader();
+            let envMLoader = new THREE.MTLLoader();
+            envMLoader.setPath('./assets/');
+            envMLoader.load('environment.mtl', function (mtls) {
                 mtls.preload();
-                objLoader.setMaterials(mtls);
-                objLoader.setPath('./assets/');
-                objLoader.load('environment.obj', function (obj) {
+                envOLoader.setMaterials(mtls);
+                envOLoader.setPath('./assets/');
+                envOLoader.load('environment.obj', function (obj) {
                     // object = obj;
                     obj.receiveShadow = true;
                     obj.scale.set(0.1, 0.1, 0.1);
