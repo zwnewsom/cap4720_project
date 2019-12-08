@@ -1,0 +1,13 @@
+body {
+  background-color: #bfe3dd;
+  color: #000;
+}
+
+.menu {
+  position: fixed;
+  bottom: 0;
+  z-index: 0;
+  width: 100%;
+  background-color: white;
+  height: 100px;
+}

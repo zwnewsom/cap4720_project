@@ -8,15 +8,21 @@
     <script src="https://threejs.org/examples/js/loaders/OBJLoader.js"></script>
     <script src="https://threejs.org/examples/js/loaders/MTLLoader.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
-    <style>
-      body {
-        background-color: #bfe3dd;
-        color: #000;
-      }
-    </style>
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <h1 align="center">CAP4720 Final Project: Interior Design Simulator</h1>
+    <div class="menu">
+      <div class="menu-furniture-selection">
+        <img
+          src="assets/thumbnails/chair_thumbnail.png"
+          alt="Chair"
+          height="60"
+          width="60"
+          onclick="addPiece('chair')"
+        />
+      </div>
+    </div>
     <script type="text/javascript">
       'use strict';
 
@@ -186,11 +192,20 @@
           .onChange(function(val) {
             console.log('selected furniture piece: ' + val);
             if (val != 'none') {
-              scene.add(furnitureMap.get(val));
-              render();
-              handleWindowResize();
+              addPiece(val);
             }
           });
+      }
+
+      // When thumbnail is clicked, corresponding object is add to the scene.
+      // Object is then deleted from the furniture map and reloaded to allow
+      // for duplicates.
+      function addPiece(name) {
+        scene.add(furnitureMap.get(name));
+        render();
+        furnitureMap.delete(name);
+        loadObject(name);
+        handleWindowResize();
       }
 
       function loadObject(name) {
