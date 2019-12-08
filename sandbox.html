@@ -85,12 +85,23 @@
             scene = new THREE.Scene();
             raycaster = new THREE.Raycaster();
             document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+
+            	// ground
+				var mesh = new THREE.Mesh( new THREE.PlaneBufferGeometry( 2000, 2000 ), new THREE.MeshPhongMaterial( { color: 0x999999, depthWrite: false } ) );
+				mesh.rotation.x = - Math.PI / 2;
+				scene.add( mesh );
+				var grid = new THREE.GridHelper( 200, 40, 0x000000, 0x000000 );
+				grid.material.opacity = 0.2;
+				grid.material.transparent = true;
+				scene.add( grid );
             initRenderer();
             initScene();
         }
 
         function initRenderer() {
             renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.gammaOutput = true;
+				renderer.gammaFactor = 2.2;
             renderer.setSize(WIDTH, HEIGHT);
             renderer.setPixelRatio(window.devicePixelRatio);
             renderer.setClearColor(0x888888, 1);
@@ -117,6 +128,7 @@
                     obj.traverse(function (child) {
                                 if ( child instanceof THREE.Mesh ) {
                                     child.castShadow = true;
+                                    child.material.shininess = 0;
                                 }
                             });
                     scene.add(obj);
@@ -148,6 +160,8 @@
                     obj.traverse(function (child) {
                                 if ( child instanceof THREE.Mesh ) {
                                     child.receiveShadow = true;
+                                    child.material.shininess = 0;
+                                    console.log(child.material);
                                 }
                             });
                     scene.add(obj);
@@ -333,19 +347,27 @@
         }
 
         function initLight() {
-            keyLight = new THREE.DirectionalLight(0xffbf80, 1.0);
-            keyLight.position.set(-1, 0.5, 1).normalize();
-            keyLight.castShadow = true;
 
-            fillLight = new THREE.DirectionalLight(0x8080ff, 0.5);
-            fillLight.position.set(1, 0, 1).normalize();
+            var light = new THREE.HemisphereLight( 0xffffff, 0x444444 );
+				light.position.set( 0, 20, 0 );
+				scene.add( light );
+				light = new THREE.DirectionalLight( 0xffffff );
+				light.position.set( 0, 20, 10 );
+				scene.add( light );
 
-            backLight = new THREE.DirectionalLight(0xffffff, 0.5);
-            backLight.position.set(1, -0.5, -1).normalize();
+            // keyLight = new THREE.DirectionalLight(0xffbf80, 1.0);
+            // keyLight.position.set(-1, 0.5, 1).normalize();
+            // keyLight.castShadow = true;
 
-            scene.add(keyLight);
-            scene.add(fillLight);
-            scene.add(backLight);
+            // fillLight = new THREE.DirectionalLight(0x8080ff, 0.5);
+            // fillLight.position.set(1, 0, 1).normalize();
+
+            // backLight = new THREE.DirectionalLight(0xffffff, 0.5);
+            // backLight.position.set(1, -0.5, -1).normalize();
+
+            // scene.add(keyLight);
+            // scene.add(fillLight);
+            // scene.add(backLight);
         }
 
         function render() {
