@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <script src="https://threejs.org/build/three.min.js"></script>
     <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://threejs.org/examples/js/controls/TransformControls.js"></script>
     <script src="https://threejs.org/examples/js/loaders/OBJLoader.js"></script>
     <script src="https://threejs.org/examples/js/loaders/MTLLoader.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
@@ -18,9 +19,13 @@
     <h1 align="center">CAP4720 Final Project: Interior Design Simulator</h1>
     <script type="text/javascript">
       'use strict';
+
       let scene, object, camera, renderer, cameraControls, activeObject;
-      let furnitureNames = ['chair'];
+      let furnitureNames = ['chair', 'couch'];
+      let furnitureObjects = [];
       let furnitureMap = new Map();
+      var raycaster = new THREE.Raycaster();
+      var mouse = new THREE.Vector2();
 
       let WIDTH = window.innerWidth;
       let HEIGHT = window.innerHeight;
@@ -28,12 +33,13 @@
       function init() {
         scene = new THREE.Scene();
         scene.background = new THREE.Color(0x80aba4);
-        // scene.fog = new THREE.Fog(0x80aba4, 20, 100);
         initRenderer();
         initScene();
         initMeshes();
         createGUI();
         handleWindowResize();
+        document.addEventListener('mousemove', onMouseMove, false);
+        window.requestAnimationFrame(render);
       }
 
       function initRenderer() {
@@ -73,9 +79,41 @@
           envOLoader.load(
             'environment.obj',
             function(obj) {
-              // object = obj;
               obj.receiveShadow = true;
-              obj.scale.set(0.1, 0.1, 0.1);
+              obj.position.set(0, 0, 0);
+              obj.traverse(function(child) {
+                if (child instanceof THREE.Mesh) {
+                  child.receiveShadow = true;
+                  child.material.shininess = 0;
+                }
+              });
+              scene.add(obj);
+              render();
+            },
+            function(xhr) {
+              if (xhr.lengthComputable) {
+                let percentComplete = (xhr.loaded / xhr.total) * 100;
+                console.log(
+                  'model' + Math.round(percentComplete, 2) + '% downloaded'
+                );
+              }
+            },
+            function() {}
+          );
+        });
+
+        // Room
+        let roomOLoader = new THREE.OBJLoader();
+        let roomMLoader = new THREE.MTLLoader();
+        roomMLoader.setPath('./assets/');
+        roomMLoader.load('room.mtl', function(mtls) {
+          mtls.preload();
+          roomOLoader.setMaterials(mtls);
+          roomOLoader.setPath('./assets/');
+          roomOLoader.load(
+            'room.obj',
+            function(obj) {
+              obj.receiveShadow = true;
               obj.position.set(0, 0, 0);
               obj.traverse(function(child) {
                 if (child instanceof THREE.Mesh) {
@@ -103,7 +141,7 @@
 
       function initCamera() {
         camera = new THREE.PerspectiveCamera(50, WIDTH / HEIGHT, 0.01, 1000);
-        camera.position.set(0, 3.5, 5);
+        camera.position.set(-36, 33, -50);
         camera.lookAt(scene.position);
         cameraControls = new THREE.OrbitControls(camera, renderer.domElement);
         cameraControls.addEventListener('change', function() {
@@ -119,6 +157,9 @@
         var light = new THREE.HemisphereLight(0xffffff, 0x444444);
         light.position.set(0, 10, 0);
         scene.add(light);
+        var fillLight = new THREE.DirectionalLight(0xffffff, 1);
+        fillLight.position.set(1, 0, 1);
+        scene.add(fillLight);
       }
 
       function initMeshes() {
@@ -170,9 +211,9 @@
                   child.material.shininess = 0;
                 }
               });
-              obj.scale.set(0.1, 0.1, 0.1);
-              obj.position.set(0, 0.48, -2);
+              obj.position.set(0, 0, 0);
               furnitureMap.set(name, obj);
+              furnitureObjects.push(obj);
             },
             function(xhr) {
               if (xhr.lengthComputable) {
@@ -198,7 +239,25 @@
         });
       }
 
+      function onMouseMove(event) {
+        // calculate mouse position in normalized device coordinates
+        // (-1 to +1) for both components
+        event.preventDefault();
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+      }
+
       function render() {
+        // update the picking ray with the camera and mouse position
+        raycaster.setFromCamera(mouse, camera);
+
+        // calculate objects intersecting the picking ray
+        var intersects = raycaster.intersectObjects(furnitureObjects);
+
+        for (var i = 0; i < intersects.length; i++) {
+          intersects[i].object.material.color.set(0xffffff);
+          console.log(intersects[i]);
+        }
         renderer.render(scene, camera);
       }
 
