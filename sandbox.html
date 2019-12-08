@@ -94,6 +94,8 @@
             renderer.setSize(WIDTH, HEIGHT);
             renderer.setPixelRatio(window.devicePixelRatio);
             renderer.setClearColor(0x888888, 1);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             document.body.appendChild(renderer.domElement);
         }
 
@@ -112,9 +114,14 @@
                 objLoader.load('chair.obj', function (obj) {
                     object = obj;
                     obj.scale.set(0.1, 0.1, 0.1);
+                    obj.traverse(function (child) {
+                                if ( child instanceof THREE.Mesh ) {
+                                    child.castShadow = true;
+                                }
+                            });
                     scene.add(obj);
                     render();
-                    //createGUI();
+                    createGUI();
                     handleResize();
                 },
                     function (xhr) {
@@ -134,11 +141,17 @@
                 objLoader.setMaterials(mtls);
                 objLoader.setPath('./assets/');
                 objLoader.load('environment.obj', function (obj) {
-                    object = obj;
+                    // object = obj;
+                    obj.receiveShadow = true;
                     obj.scale.set(0.1, 0.1, 0.1);
+                    obj.traverse(function (child) {
+                                if ( child instanceof THREE.Mesh ) {
+                                    child.receiveShadow = true;
+                                }
+                            });
                     scene.add(obj);
                     render();
-                    createGUI();
+                    // createGUI();
                     handleResize();
                 },
                     function (xhr) {
@@ -343,6 +356,7 @@
         function initLight() {
             keyLight = new THREE.DirectionalLight(0xffbf80, 1.0);
             keyLight.position.set(-1, 0.5, 1).normalize();
+            keyLight.castShadow = true;
 
             fillLight = new THREE.DirectionalLight(0x8080ff, 0.5);
             fillLight.position.set(1, 0, 1).normalize();
