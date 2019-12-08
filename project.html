@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <script src="https://threejs.org/build/three.min.js"></script>
     <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
-    <script src="https://threejs.org/examples/js/controls/TransformControls.js"></script>
+    <script src="https://threejs.org/examples/js/controls/DragControls.js"></script>
     <script src="https://threejs.org/examples/js/loaders/OBJLoader.js"></script>
     <script src="https://threejs.org/examples/js/loaders/MTLLoader.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
@@ -13,14 +13,16 @@
   <body>
     <h1 align="center">CAP4720 Final Project: Interior Design Simulator</h1>
     <div class="menu">
-      <div class="menu-furniture-selection">
-        <img
-          src="assets/thumbnails/chair_thumbnail.png"
-          alt="Chair"
-          height="60"
-          width="60"
-          onclick="addPiece('chair')"
-        />
+      <div class="menu-main">
+        <div class="menu-main-furniture-selection">
+          <img
+            src="assets/thumbnails/chair_thumbnail.png"
+            alt="Chair"
+            height="60"
+            width="60"
+            onclick="addPiece('chair')"
+          />
+        </div>
       </div>
     </div>
     <script type="text/javascript">
@@ -30,8 +32,6 @@
       let furnitureNames = ['chair', 'couch'];
       let furnitureObjects = [];
       let furnitureMap = new Map();
-      var raycaster = new THREE.Raycaster();
-      var mouse = new THREE.Vector2();
 
       let WIDTH = window.innerWidth;
       let HEIGHT = window.innerHeight;
@@ -42,10 +42,24 @@
         initRenderer();
         initScene();
         initMeshes();
-        createGUI();
         handleWindowResize();
-        document.addEventListener('mousemove', onMouseMove, false);
         window.requestAnimationFrame(render);
+
+        var controls = new THREE.DragControls(
+          furnitureObjects,
+          camera,
+          renderer.domElement
+        );
+        controls.addEventListener('dragstart', function(event) {
+          console.log('drag start on object: ', event.object);
+          event.object.material.emissive.set(0xaaaaaa);
+          activeObject = event.object;
+          cameraControls.enabled = false;
+        });
+        controls.addEventListener('dragend', function(event) {
+          event.object.material.emissive.set(0x000000);
+          cameraControls.enabled = true;
+        });
       }
 
       function initRenderer() {
@@ -62,11 +76,6 @@
       function initScene() {
         initCamera();
 
-        // Ground
-        // var mesh = new THREE.Mesh(
-        //   new THREE.PlaneBufferGeometry(2000, 2000),
-        //   new THREE.MeshPhongMaterial({ color: 0xbfe3dd, depthWrite: false })
-        // );
         // mesh.rotation.x = -Math.PI / 2;
         // scene.add(mesh);
         // var grid = new THREE.GridHelper(200, 40, 0x000000, 0x000000);
@@ -175,28 +184,6 @@
         });
       }
 
-      function createGUI() {
-        var guiObject = {
-          geomType: 'none'
-        };
-        let guiController = new dat.GUI();
-        let furnitureFolder = guiController.addFolder('Furniture');
-        furnitureFolder
-          .add(guiObject, 'geomType', [
-            'none',
-            'chair',
-            'couch',
-            'coffee table'
-          ])
-          .name('Piece')
-          .onChange(function(val) {
-            console.log('selected furniture piece: ' + val);
-            if (val != 'none') {
-              addPiece(val);
-            }
-          });
-      }
-
       // When thumbnail is clicked, corresponding object is add to the scene.
       // Object is then deleted from the furniture map and reloaded to allow
       // for duplicates.
@@ -254,30 +241,17 @@
         });
       }
 
-      function onMouseMove(event) {
-        // calculate mouse position in normalized device coordinates
-        // (-1 to +1) for both components
-        event.preventDefault();
-        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+      function animate() {
+        requestAnimationFrame(animate);
+        render();
       }
 
       function render() {
-        // update the picking ray with the camera and mouse position
-        raycaster.setFromCamera(mouse, camera);
-
-        // calculate objects intersecting the picking ray
-        var intersects = raycaster.intersectObjects(furnitureObjects);
-
-        for (var i = 0; i < intersects.length; i++) {
-          intersects[i].object.material.color.set(0xffffff);
-          console.log(intersects[i]);
-        }
         renderer.render(scene, camera);
       }
 
       init();
-      render();
+      animate();
     </script>
   </body>
 </html>

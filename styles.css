@@ -5,9 +5,14 @@ body {
 
 .menu {
   position: fixed;
+  display: flex;
   bottom: 0;
   z-index: 0;
   width: 100%;
-  background-color: white;
   height: 100px;
+}
+
+.menu-main {
+  background-color: white;
+  align-content: center;
 }
