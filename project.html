@@ -286,18 +286,18 @@
       }
 
       function initLight() {
-        var light = new THREE.HemisphereLight(0xffffff, 0x444444);
-        light.position.set(0, 10, 0);
-        scene.add(light);
-        var light = new THREE.HemisphereLight(0xffffff, 0x444444);
-        light.position.set(0, 20, 0);
-        scene.add(light);
-        // var light = new THREE.AmbientLight(0xffffff, 1);
+        // var light = new THREE.HemisphereLight(0xffffff, 0x444444);
+        // light.position.set(0, 10, 0);
+        // scene.add(light);
+        // var light = new THREE.HemisphereLight(0xffffff, 0x444444);
         // light.position.set(0, 20, 0);
         // scene.add(light);
-        // let fillLight = new THREE.DirectionalLight(0xffffff, 2);
-        // fillLight.position.set(1, 5, 5);
-        // scene.add(fillLight);
+        var light = new THREE.AmbientLight(0xffffff, 1);
+        light.position.set(0, 20, 0);
+        scene.add(light);
+        let fillLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        fillLight.position.set(10, 10, 10);
+        scene.add(fillLight);
       }
 
       function initMeshes() {
