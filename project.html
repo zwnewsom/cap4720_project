@@ -15,6 +15,7 @@
     <div class="menu">
       <div class="menu-main">
         <div class="menu-main-furniture-selection">
+          <h3>Furniture</h3>
           <img
             src="assets/thumbnails/chair_thumbnail.png"
             alt="Chair"
@@ -24,17 +25,27 @@
           />
           <img
             src="assets/thumbnails/couch_thumbnail.png"
-            alt="Chair"
+            alt="Couch"
             height="60"
             width="60"
             onclick="addPiece('couch')"
           />
           <img
             src="assets/thumbnails/plant_thumbnail.png"
-            alt="Chair"
+            alt="Plant"
             height="60"
             width="60"
             onclick="addPiece('plant')"
+          />
+        </div>
+        <div class="menu-main-texture-selection">
+          <h3>Materials</h3>
+          <img
+            src="assets/thumbnails/gray_linen_thumbnail.png"
+            alt="Gray Linen"
+            height="60"
+            width="60"
+            onclick="swapTexture('gray_linen')"
           />
         </div>
       </div>
@@ -46,6 +57,7 @@
       let furnitureNames = ['chair', 'couch', 'plant'];
       let furnitureObjects = [];
       let furnitureMap = new Map();
+      let uuidMap = new Map();
 
       let WIDTH = window.innerWidth;
       let HEIGHT = window.innerHeight;
@@ -65,7 +77,8 @@
           renderer.domElement
         );
         controls.addEventListener('dragstart', function(event) {
-          // console.log('drag start on object: ', event.object);
+          console.log('drag start on object: ', event.object);
+          console.log('material: ', event.object.material);
           event.object.material.emissive.set(0xaaaaaa);
           activeObject = event.object;
           cameraControls.enabled = false;
@@ -227,9 +240,25 @@
       function addPiece(name) {
         scene.add(furnitureMap.get(name));
         render();
+        activeObject = furnitureMap.get(name);
         furnitureMap.delete(name);
         loadObject(name);
         handleWindowResize();
+      }
+
+      function swapTexture(name) {
+        console.log('swap texture invoked');
+        console.log('active object: ', activeObject);
+        if (activeObject) {
+          let pos = activeObject.position;
+          scene.remove(activeObject);
+          let mtlLoader = new THREE.MTLLoader();
+          mtlLoader.setPath('./assets/');
+          mtlLoader.load('/materials/' + name + '.mtl', function(mtls) {
+            mtls.preload();
+            activeObject.material = mtls;
+          });
+        }
       }
 
       function loadObject(name) {
