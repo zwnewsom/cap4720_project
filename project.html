@@ -77,13 +77,11 @@
           renderer.domElement
         );
         controls.addEventListener('hoveron', function(event) {
-          if(event.object.parent.parent != scene) {
+          if (event.object.parent.parent != scene) {
             controls.enabled = false;
-          }
-          else {
+          } else {
             controls.enabled = true;
           }
-          
         });
         controls.addEventListener('dragstart', function(event) {
           console.log('drag start on object: ', event.object);
@@ -259,14 +257,16 @@
         console.log('swap texture invoked');
         console.log('active object: ', activeObject);
         if (activeObject) {
-          let pos = activeObject.position;
-          scene.remove(activeObject);
-          let mtlLoader = new THREE.MTLLoader();
-          mtlLoader.setPath('./assets/');
-          mtlLoader.load('/materials/' + name + '.mtl', function(mtls) {
-            mtls.preload();
-            activeObject.material = mtls;
+          var texture = new THREE.TextureLoader().load(
+            '/assets/textures/' + name + '.png'
+          );
+          var material = new THREE.MeshPhongMaterial({
+            map: texture,
+            shininess: 0
           });
+          console.log(material);
+          activeObject.material = material;
+          render();
         }
       }
 
@@ -291,6 +291,7 @@
               obj.position.set(0, 0, 0);
               furnitureMap.set(name, obj);
               furnitureObjects.push(obj);
+              uuidMap.set(obj.uuid, name);
             },
             function(xhr) {
               if (xhr.lengthComputable) {
