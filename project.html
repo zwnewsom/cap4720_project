@@ -14,74 +14,102 @@
     <h1 align="center">CAP4720 Final Project: Interior Design Simulator</h1>
     <div class="menu">
       <div class="menu-main">
-        <div class="menu-main-furniture-selection">
+        <div class="menu-main-labels">
           <h3>Furniture</h3>
-          <img
-            src="assets/thumbnails/chair_thumbnail.png"
-            alt="Chair"
-            height="60"
-            width="60"
-            onclick="addPiece('chair')"
-          />
-          <img
-            src="assets/thumbnails/couch_thumbnail.png"
-            alt="Couch"
-            height="60"
-            width="60"
-            onclick="addPiece('couch')"
-          />
-          <img
-            src="assets/thumbnails/table_thumbnail.png"
-            alt="Coffee Table"
-            height="60"
-            width="60"
-            onclick="addPiece('table')"
-          />
-          <img
-            src="assets/thumbnails/plant_thumbnail.png"
-            alt="Plant"
-            height="60"
-            width="60"
-            onclick="addPiece('plant')"
-          />
+          <h3>Uphostery</h3>
+          <h3>Wood Finishes</h3>
         </div>
-        <div class="menu-main-texture-selection">
-          <h3>Materials</h3>
-          <img
-            src="assets/thumbnails/gray_linen_thumbnail.png"
-            alt="Gray Linen"
-            height="60"
-            width="60"
-            onclick="swapTexture('gray_linen')"
-          />
-          <img
-            src="assets/thumbnails/green_linen_thumbnail.png"
-            alt="Green Linen"
-            height="60"
-            width="60"
-            onclick="swapTexture('green_linen')"
-          />
-          <img
-            src="assets/thumbnails/blue_linen_thumbnail.png"
-            alt="Blue Linen"
-            height="60"
-            width="60"
-            onclick="swapTexture('blue_linen')"
-          />
-          <img
-            src="assets/thumbnails/natural_linen_thumbnail.png"
-            alt="Natural Linen"
-            height="60"
-            width="60"
-            onclick="swapTexture('natural_linen')"
-          />
-          <img
-            src="assets/thumbnails/rust_linen_thumbnail.png"
-            alt="Rust Linen"
-            height="60"
-            width="60"
-            onclick="swapTexture('rust_linen')"
-          />
+        <div class="menu-main-thumbnails">
+          <div class="menu-main-thumbnails-furniture-selection">
+            <img
+              src="assets/thumbnails/chair_thumbnail.png"
+              alt="Chair"
+              height="60"
+              width="60"
+              onclick="addPiece('chair')"
+            />
+            <img
+              src="assets/thumbnails/couch_thumbnail.png"
+              alt="Couch"
+              height="60"
+              width="60"
+              onclick="addPiece('couch')"
+            />
+            <img
+              src="assets/thumbnails/table_thumbnail.png"
+              alt="Coffee Table"
+              height="60"
+              width="60"
+              onclick="addPiece('table')"
+            />
+            <img
+              src="assets/thumbnails/plant_thumbnail.png"
+              alt="Plant"
+              height="60"
+              width="60"
+              onclick="addPiece('plant')"
+            />
+            <img
+              src="assets/thumbnails/lamp_thumbnail.png"
+              alt="Lamp"
+              height="60"
+              width="60"
+              onclick="addPiece('lamp')"
+            />
+          </div>
+          <div class="menu-main-thumbnails-uphostery-selection">
+            <img
+              src="assets/thumbnails/gray_linen_thumbnail.png"
+              alt="Gray Linen"
+              height="60"
+              width="60"
+              onclick="swapTexture('gray_linen')"
+            />
+            <img
+              src="assets/thumbnails/green_linen_thumbnail.png"
+              alt="Green Linen"
+              height="60"
+              width="60"
+              onclick="swapTexture('green_linen')"
+            />
+            <img
+              src="assets/thumbnails/blue_linen_thumbnail.png"
+              alt="Blue Linen"
+              height="60"
+              width="60"
+              onclick="swapTexture('blue_linen')"
+            />
+            <img
+              src="assets/thumbnails/natural_linen_thumbnail.png"
+              alt="Natural Linen"
+              height="60"
+              width="60"
+              onclick="swapTexture('natural_linen')"
+            />
+            <img
+              src="assets/thumbnails/rust_linen_thumbnail.png"
+              alt="Rust Linen"
+              height="60"
+              width="60"
+              onclick="swapTexture('rust_linen')"
+            />
+          </div>
+          <div class="menu-main-thumbnails-wood-selection">
+            <img
+              src="assets/thumbnails/oak_thumbnail.png"
+              alt="Oak"
+              height="60"
+              width="60"
+              onclick="swapTexture('oak')"
+            />
+            <img
+              src="assets/thumbnails/bamboo_thumbnail.png"
+              alt="Bamboo"
+              height="60"
+              width="60"
+              onclick="swapTexture('bamboo')"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -89,7 +117,7 @@
       'use strict';
 
       let scene, object, camera, renderer, cameraControls, activeObject;
-      let furnitureNames = ['chair', 'couch', 'plant', 'table'];
+      let furnitureNames = ['chair', 'couch', 'plant', 'table', 'lamp'];
       let furnitureObjects = [];
       let furnitureMap = new Map();
       let uuidMap = new Map();
@@ -157,8 +185,8 @@
 
       function initRenderer() {
         renderer = new THREE.WebGLRenderer({ antialias: true });
-        // renderer.gammaOutput = true;
-        // renderer.gammaFactor = 2.2;
+        renderer.gammaOutput = true;
+        renderer.gammaFactor = 2.2;
         renderer.setSize(WIDTH, HEIGHT);
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setClearColor(0x888888, 1);

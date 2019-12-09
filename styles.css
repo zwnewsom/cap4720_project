@@ -22,15 +22,31 @@ h3 {
   background-color: white;
   align-content: center;
   display: flex;
+  flex-direction: row;
+}
+
+.menu-main-labels {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+}
+
+.menu-main-thumbnails {
+  display: flex;
   flex-direction: column;
 }
 
-.menu-main-furniture-selection {
+.menu-main-thumbnails-furniture-selection {
   display: flex;
   flex-direction: row;
 }
 
-.menu-main-texture-selection {
+.menu-main-thumbnails-uphostery-selection {
+  display: flex;
+  flex-direction: row;
+}
+
+.menu-main-thumbnails-wood-selection {
   display: flex;
   flex-direction: row;
 }
