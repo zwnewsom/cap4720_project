@@ -16,3 +16,13 @@ body {
   background-color: white;
   align-content: center;
 }
+
+.menu-main-furniture-selection {
+  display: flex;
+  flex-direction: row;
+}
+
+img {
+  margin: 10px;
+  border-radius: 4px;
+}

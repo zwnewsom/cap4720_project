@@ -22,6 +22,20 @@
             width="60"
             onclick="addPiece('chair')"
           />
+          <img
+            src="assets/thumbnails/couch_thumbnail.png"
+            alt="Chair"
+            height="60"
+            width="60"
+            onclick="addPiece('couch')"
+          />
+          <img
+            src="assets/thumbnails/plant_thumbnail.png"
+            alt="Chair"
+            height="60"
+            width="60"
+            onclick="addPiece('plant')"
+          />
         </div>
       </div>
     </div>
@@ -29,7 +43,7 @@
       'use strict';
 
       let scene, object, camera, renderer, cameraControls, activeObject;
-      let furnitureNames = ['chair', 'couch'];
+      let furnitureNames = ['chair', 'couch', 'plant'];
       let furnitureObjects = [];
       let furnitureMap = new Map();
 
@@ -58,8 +72,14 @@
         });
         controls.addEventListener('dragend', function(event) {
           event.object.material.emissive.set(0x000000);
-          event.object.position.x = round_to_precision(event.object.position.x, 5);
-          event.object.position.z = round_to_precision(event.object.position.z, 5);
+          event.object.position.x = round_to_precision(
+            event.object.position.x,
+            5
+          );
+          event.object.position.z = round_to_precision(
+            event.object.position.z,
+            5
+          );
           event.object.position.y = 0;
           cameraControls.enabled = true;
         });
@@ -253,7 +273,7 @@
       }
 
       function round_to_precision(x, precision) {
-        var y = +x + (precision === undefined ? 0.5 : precision/2);
+        var y = +x + (precision === undefined ? 0.5 : precision / 2);
         return y - (y % (precision === undefined ? 1 : +precision));
       }
 

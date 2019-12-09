@@ -1,0 +1,24 @@
+# Blender MTL File: 'furniture.blend'
+# Material Count: 2
+
+newmtl Material.006
+Ns 128.101238
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.227273 0.227273 0.227273
+Ke 0.0 0.0 0.0
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd textures/greenstar32-32x.png
+
+newmtl Material.007
+Ns 61.479850
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.0 0.0 0.0
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd textures/greenstar32-32x.png
