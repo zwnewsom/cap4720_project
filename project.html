@@ -64,6 +64,15 @@
           camera,
           renderer.domElement
         );
+        controls.addEventListener('hoveron', function(event) {
+          if(event.object.parent.parent != scene) {
+            controls.enabled = false;
+          }
+          else {
+            controls.enabled = true;
+          }
+          
+        });
         controls.addEventListener('dragstart', function(event) {
           // console.log('drag start on object: ', event.object);
           event.object.material.emissive.set(0xaaaaaa);
