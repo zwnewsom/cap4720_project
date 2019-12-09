@@ -77,12 +77,10 @@
       function initScene() {
         initCamera();
 
-        // mesh.rotation.x = -Math.PI / 2;
-        // scene.add(mesh);
-        // var grid = new THREE.GridHelper(200, 40, 0x000000, 0x000000);
-        // grid.material.opacity = 0.2;
-        // grid.material.transparent = true;
-        // scene.add(grid);
+        var grid = new THREE.GridHelper(15, 4, 0x5b546c, 0x5b546c);
+        grid.material.opacity = 0.8;
+        grid.material.transparent = true;
+        grid.position.set(-4, 5, -18.5);
 
         // Environment
         let envOLoader = new THREE.OBJLoader();
@@ -131,6 +129,7 @@
             function(obj) {
               obj.receiveShadow = true;
               obj.position.set(0, 0, 0);
+              scene.add(grid);
               obj.traverse(function(child) {
                 if (child instanceof THREE.Mesh) {
                   child.receiveShadow = true;
