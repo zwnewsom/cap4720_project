@@ -31,6 +31,13 @@
             onclick="addPiece('couch')"
           />
           <img
+            src="assets/thumbnails/table_thumbnail.png"
+            alt="Coffee Table"
+            height="60"
+            width="60"
+            onclick="addPiece('table')"
+          />
+          <img
             src="assets/thumbnails/plant_thumbnail.png"
             alt="Plant"
             height="60"
@@ -82,7 +89,7 @@
       'use strict';
 
       let scene, object, camera, renderer, cameraControls, activeObject;
-      let furnitureNames = ['chair', 'couch', 'plant'];
+      let furnitureNames = ['chair', 'couch', 'plant', 'table'];
       let furnitureObjects = [];
       let furnitureMap = new Map();
       let uuidMap = new Map();
