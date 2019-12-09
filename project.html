@@ -65,22 +65,37 @@
           renderer.domElement
         );
         controls.addEventListener('dragstart', function(event) {
-          console.log('drag start on object: ', event.object);
+          // console.log('drag start on object: ', event.object);
           event.object.material.emissive.set(0xaaaaaa);
           activeObject = event.object;
           cameraControls.enabled = false;
         });
         controls.addEventListener('dragend', function(event) {
           event.object.material.emissive.set(0x000000);
-          event.object.position.x = round_to_precision(
-            event.object.position.x,
-            5
-          );
-          event.object.position.z = round_to_precision(
-            event.object.position.z,
-            5
-          );
+          event.object.position.x = clamp(event.object.position.x, -4.0, 12.0);
+          event.object.position.z = clamp(event.object.position.z, -4.0, 12.0);
+          if (event.object.position.x < 0)
+            event.object.position.x = round_to_precision(
+              event.object.position.x,
+              -4
+            );
+          else
+            event.object.position.x = round_to_precision(
+              event.object.position.x,
+              4
+            );
+          if (event.object.position.z < 0)
+            event.object.position.z = round_to_precision(
+              event.object.position.z,
+              -4
+            );
+          else
+            event.object.position.z = round_to_precision(
+              event.object.position.z,
+              4
+            );
           event.object.position.y = 0;
+          console.log(event.object.position);
           cameraControls.enabled = true;
         });
       }
@@ -275,6 +290,10 @@
       function round_to_precision(x, precision) {
         var y = +x + (precision === undefined ? 0.5 : precision / 2);
         return y - (y % (precision === undefined ? 1 : +precision));
+      }
+
+      function clamp(num, min, max) {
+        return num <= min ? min : num >= max ? max : num;
       }
 
       init();
