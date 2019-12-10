@@ -394,38 +394,6 @@
         });
 
         // Rug
-        let rugOLoader = new THREE.OBJLoader();
-        let rugMLoader = new THREE.MTLLoader();
-        rugMLoader.setPath('./assets/');
-        rugMLoader.load('rug.mtl', function(mtls) {
-          mtls.preload();
-          rugOLoader.setMaterials(mtls);
-          rugOLoader.setPath('./assets/');
-          rugOLoader.load(
-            'rug.obj',
-            function(obj) {
-              obj.receiveShadow = true;
-              obj.position.set(0, 0, 0);
-              obj.traverse(function(child) {
-                if (child instanceof THREE.Mesh) {
-                  child.receiveShadow = true;
-                  child.material.shininess = 0;
-                }
-              });
-              loadedRug = obj;
-              render();
-            },
-            function(xhr) {
-              if (xhr.lengthComputable) {
-                let percentComplete = (xhr.loaded / xhr.total) * 100;
-                console.log(
-                  'model' + Math.round(percentComplete, 2) + '% downloaded'
-                );
-              }
-            },
-            function() {}
-          );
-        });
 
         initLight();
       }
@@ -480,24 +448,47 @@
 
       function loadRug(name) {
         console.log(rug);
-        if (!rug) {
-          scene.add(loadedRug);
-          rug = loadedRug;
+        if (rug) {
+          scene.remove(rug);
         }
-        console.log('changing texture');
-        var texture = new THREE.TextureLoader().load(
-          '/assets/textures/' + name + '.png'
-        );
-        var material = new THREE.MeshPhongMaterial({
-          map: texture,
-          shininess: 0
+        let rugOLoader = new THREE.OBJLoader();
+        let rugMLoader = new THREE.MTLLoader();
+        rugMLoader.setPath('./assets/');
+        rugMLoader.load(name + '.mtl', function(mtls) {
+          mtls.preload();
+          rugOLoader.setMaterials(mtls);
+          rugOLoader.setPath('./assets/');
+          rugOLoader.load(
+            'rug.obj',
+            function(obj) {
+              obj.receiveShadow = true;
+              obj.position.set(0, 0, 0);
+              obj.traverse(function(child) {
+                if (child instanceof THREE.Mesh) {
+                  child.receiveShadow = true;
+                  child.material.shininess = 0;
+                }
+              });
+              rug = obj;
+              scene.add(obj);
+              render();
+            },
+            function(xhr) {
+              if (xhr.lengthComputable) {
+                let percentComplete = (xhr.loaded / xhr.total) * 100;
+                console.log(
+                  name + Math.round(percentComplete, 2) + '% downloaded'
+                );
+              }
+            },
+            function() {}
+          );
         });
-        rug.material = material;
-        render();
       }
 
       function swapTexture(name) {
         if (activeObject) {
+          console.log(activeObject);
           var texture = new THREE.TextureLoader().load(
             '/assets/textures/' + name + '.png'
           );
