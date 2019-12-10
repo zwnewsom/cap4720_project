@@ -178,6 +178,7 @@
       let scene, object, camera, renderer, cameraControls, activeObject;
       let furnitureNames = ['chair', 'couch', 'plant', 'table', 'lamp'];
       let furnitureSizes = new Map();
+      let SNAP_PRECISION = 4;
       furnitureSizes.set('chair', 1);
       furnitureSizes.set('couch', 2);
       furnitureSizes.set('plant', 1);
@@ -275,22 +276,22 @@
           if (event.object.position.x < 0)
             event.object.position.x = round_to_precision(
               event.object.position.x,
-              -4
+              -SNAP_PRECISION
             );
           else
             event.object.position.x = round_to_precision(
               event.object.position.x,
-              4
+              SNAP_PRECISION
             );
           if (event.object.position.z < 0)
             event.object.position.z = round_to_precision(
               event.object.position.z,
-              -4
+              -SNAP_PRECISION
             );
           else
             event.object.position.z = round_to_precision(
               event.object.position.z,
-              4
+              SNAP_PRECISION
             );
           // currBox.update();
           // boundingBoxes.forEach(box => {
