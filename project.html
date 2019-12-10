@@ -8,6 +8,9 @@
     <script src="https://threejs.org/examples/js/loaders/OBJLoader.js"></script>
     <script src="https://threejs.org/examples/js/loaders/MTLLoader.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    <script src="assets/extensions/threex.collider.js"></script>
+    <script src="assets/extensions/threex.collidersystem.js"></script>
+    <script src="assets/extensions/threex.colliderhelper.js"></script>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -121,6 +124,9 @@
       let furnitureObjects = [];
       let furnitureMap = new Map();
       let uuidMap = new Map();
+      let colliderSystem = new THREEx.ColliderSystem();
+      let colliders = [];
+      colliderSystem.computeAndNotify(colliders);
 
       let WIDTH = window.innerWidth;
       let HEIGHT = window.innerHeight;
@@ -128,11 +134,11 @@
       function init() {
         scene = new THREE.Scene();
         scene.background = new THREE.Color(0x80aba4);
+
         initRenderer();
         initScene();
         initMeshes();
         handleWindowResize();
-        window.requestAnimationFrame(render);
 
         var controls = new THREE.DragControls(
           furnitureObjects,
@@ -311,9 +317,37 @@
       // Object is then deleted from the furniture map and reloaded to allow
       // for duplicates.
       function addPiece(name) {
-        scene.add(furnitureMap.get(name));
+        let piece = furnitureMap.get(name);
+        scene.add(piece);
+        furnitureObjects.push(piece);
+        var collider = THREEx.Collider.createFromObject3d(piece);
+        colliders.push(collider);
+
+        // init collider helper
+        var helper = new THREEx.ColliderHelper(collider);
+        helper.material.color.set('green');
+        scene.add(helper);
+
+        collider.addEventListener('contactEnter', function(otherCollider) {
+          console.log(
+            'contactEnter',
+            collider.object3d.name,
+            'with',
+            otherCollider.object3d.name
+          );
+          helper.material.color.set('red');
+        });
+        collider.addEventListener('contactExit', function(otherCollider) {
+          console.log(
+            'contactExit',
+            collider.object3d.name,
+            'with',
+            otherCollider.object3d.name
+          );
+          helper.material.color.set('green');
+        });
+
         render();
-        activeObject = furnitureMap.get(name);
         furnitureMap.delete(name);
         loadObject(name);
         handleWindowResize();
@@ -356,7 +390,6 @@
               });
               obj.position.set(0, 0, 0);
               furnitureMap.set(name, obj);
-              furnitureObjects.push(obj);
               uuidMap.set(obj.uuid, name);
             },
             function(xhr) {
