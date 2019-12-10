@@ -121,12 +121,18 @@
 
       let scene, object, camera, renderer, cameraControls, activeObject;
       let furnitureNames = ['chair', 'couch', 'plant', 'table', 'lamp'];
+      let furnitureSizes = new Map();
+      furnitureSizes.set('chair', 1);
+      furnitureSizes.set('couch', 2);
+      furnitureSizes.set('plant', 1);
+      furnitureSizes.set('table', 2);
+      furnitureSizes.set('lamp', 1);
       let furnitureObjects = [];
       let furnitureMap = new Map();
-      let uuidMap = new Map();
+      let idMap = new Map();
       let colliderSystem = new THREEx.ColliderSystem();
       let colliders = [];
-      colliderSystem.computeAndNotify(colliders);
+      let gridMap = [[]];
 
       let WIDTH = window.innerWidth;
       let HEIGHT = window.innerHeight;
@@ -134,6 +140,7 @@
       function init() {
         scene = new THREE.Scene();
         scene.background = new THREE.Color(0x80aba4);
+        colliderSystem.computeAndNotify(colliders);
 
         initRenderer();
         initScene();
@@ -145,24 +152,63 @@
           camera,
           renderer.domElement
         );
-        controls.addEventListener('hoveron', function(event) {
-          if (event.object.parent.parent != scene) {
-            controls.enabled = false;
-          } else {
-            controls.enabled = true;
+        document.addEventListener('keydown', function(event) {
+          if (activeObject && event.which === 82) {
+            activeObject.rotateY(1.5708);
           }
         });
+        // controls.addEventListener('hoveron', function(event) {
+        //   if (event.object.parent.parent != scene) {
+        //     controls.enabled = false;
+        //   } else {
+        //     controls.enabled = true;
+        //   }
+        // });
         controls.addEventListener('dragstart', function(event) {
-          console.log('drag start on object: ', event.object);
-          console.log('material: ', event.object.material);
           event.object.material.emissive.set(0xaaaaaa);
           activeObject = event.object;
+          console.log('activeObject: ', activeObject);
           cameraControls.enabled = false;
         });
         controls.addEventListener('dragend', function(event) {
           event.object.material.emissive.set(0x000000);
-          event.object.position.x = clamp(event.object.position.x, -4.0, 12.0);
-          event.object.position.z = clamp(event.object.position.z, -4.0, 12.0);
+          let name = idMap.get(event.object.parent.id);
+          let size = furnitureSizes.get(name);
+          let direction = new THREE.Vector3();
+          let xMin = -4,
+            xMax = 8,
+            zMin = -8,
+            zMax = 12;
+          event.object.getWorldDirection(direction);
+          if (direction.x > 0 && direction.z > 0) {
+            console.log('both pos');
+            if (size == 2) {
+              xMax = 4;
+            }
+            zMax = 4;
+          } else if (direction.x > 0 && direction.z < 0) {
+            console.log('x pos, z neg');
+            if (size == 2) {
+              zMin = -4;
+            }
+            zMax = 4;
+            xMin = -8;
+            xMax = 4;
+          } else if (direction.x < 0 && direction.z > 0) {
+            console.log('x neg, z pos');
+          } else {
+            console.log('both neg');
+            if (size == 2) {
+              xMax = 4;
+            } else {
+              xMax = 8;
+            }
+            zMin = -8;
+            zMax = 4;
+            xMin = -4;
+          }
+          // event.object.position.x = clamp(event.object.position.x, xMin, xMax);
+          // event.object.position.z = clamp(event.object.position.z, zMin, zMax);
           if (event.object.position.x < 0)
             event.object.position.x = round_to_precision(
               event.object.position.x,
@@ -185,6 +231,7 @@
             );
           event.object.position.y = 0;
           console.log(event.object.position);
+          console.log(direction);
           cameraControls.enabled = true;
         });
       }
@@ -203,10 +250,10 @@
       function initScene() {
         initCamera();
 
-        var grid = new THREE.GridHelper(15, 4, 0x5b546c, 0x5b546c);
-        grid.material.opacity = 0.8;
+        var grid = new THREE.GridHelper(15, 4, 0x000000, 0x000000);
+        grid.material.opacity = 0.2;
         grid.material.transparent = true;
-        grid.position.set(-4, 5, -18.5);
+        grid.position.set(0, 4, 0);
 
         // Environment
         let envOLoader = new THREE.OBJLoader();
@@ -320,6 +367,7 @@
         let piece = furnitureMap.get(name);
         scene.add(piece);
         furnitureObjects.push(piece);
+        console.log(piece);
         var collider = THREEx.Collider.createFromObject3d(piece);
         colliders.push(collider);
 
@@ -354,8 +402,6 @@
       }
 
       function swapTexture(name) {
-        console.log('swap texture invoked');
-        console.log('active object: ', activeObject);
         if (activeObject) {
           var texture = new THREE.TextureLoader().load(
             '/assets/textures/' + name + '.png'
@@ -364,7 +410,6 @@
             map: texture,
             shininess: 0
           });
-          console.log(material);
           activeObject.material = material;
           render();
         }
@@ -390,7 +435,8 @@
               });
               obj.position.set(0, 0, 0);
               furnitureMap.set(name, obj);
-              uuidMap.set(obj.uuid, name);
+              console.log(name, obj.id);
+              idMap.set(obj.id, name);
             },
             function(xhr) {
               if (xhr.lengthComputable) {
