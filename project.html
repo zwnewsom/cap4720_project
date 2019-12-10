@@ -8,9 +8,6 @@
     <script src="https://threejs.org/examples/js/loaders/OBJLoader.js"></script>
     <script src="https://threejs.org/examples/js/loaders/MTLLoader.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
-    <script src="assets/extensions/threex.collider.js"></script>
-    <script src="assets/extensions/threex.collidersystem.js"></script>
-    <script src="assets/extensions/threex.colliderhelper.js"></script>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -18,9 +15,10 @@
     <div class="menu">
       <div class="menu-main">
         <div class="menu-main-labels">
-          <h3>Furniture</h3>
-          <h3>Uphostery</h3>
-          <h3>Wood Finishes</h3>
+          <h4>Furniture</h4>
+          <h4>Uphostery</h4>
+          <h4>Wood Finishes</h4>
+          <h4>Rugs</h4>
         </div>
         <div class="menu-main-thumbnails">
           <div class="menu-main-thumbnails-furniture-selection">
@@ -112,6 +110,64 @@
               width="60"
               onclick="swapTexture('bamboo')"
             />
+            <img
+              src="assets/thumbnails/ash_thumbnail.png"
+              alt="Ash"
+              height="60"
+              width="60"
+              onclick="swapTexture('ash')"
+            />
+            <img
+              src="assets/thumbnails/reclaimed_thumbnail.png"
+              alt="Reclaimed"
+              height="60"
+              width="60"
+              onclick="swapTexture('reclaimed')"
+            />
+            <img
+              src="assets/thumbnails/white_oak_thumbnail.png"
+              alt="White Oak"
+              height="60"
+              width="60"
+              onclick="swapTexture('white_oak')"
+            />
+          </div>
+          <div class="menu-main-thumbnails-rug-selection">
+            <img
+              src="assets/thumbnails/blue_rug_thumbnail.png"
+              alt="Blue"
+              height="60"
+              width="60"
+              onclick="loadRug('blue_rug')"
+            />
+            <img
+              src="assets/thumbnails/pink_rug_thumbnail.png"
+              alt="Pink"
+              height="60"
+              width="60"
+              onclick="loadRug('pink_rug')"
+            />
+            <img
+              src="assets/thumbnails/black_rug_thumbnail.png"
+              alt="Black"
+              height="60"
+              width="60"
+              onclick="loadRug('black_rug')"
+            />
+            <img
+              src="assets/thumbnails/white_rug_thumbnail.png"
+              alt="White"
+              height="60"
+              width="60"
+              onclick="loadRug('white_rug')"
+            />
+            <img
+              src="assets/thumbnails/gray_rug_thumbnail.png"
+              alt="Gray"
+              height="60"
+              width="60"
+              onclick="loadRug('gray_rug')"
+            />
           </div>
         </div>
       </div>
@@ -130,9 +186,11 @@
       let furnitureObjects = [];
       let furnitureMap = new Map();
       let idMap = new Map();
-      let colliderSystem = new THREEx.ColliderSystem();
-      let colliders = [];
-      let gridMap = [[]];
+      let loadedRug, rug;
+      // let colliderSystem = new THREEx.ColliderSystem();
+      // let colliders = [];
+      let boundingBoxes = new Map();
+      let lastPosition = new THREE.Vector3();
 
       let WIDTH = window.innerWidth;
       let HEIGHT = window.innerHeight;
@@ -140,11 +198,11 @@
       function init() {
         scene = new THREE.Scene();
         scene.background = new THREE.Color(0x80aba4);
-        colliderSystem.computeAndNotify(colliders);
+        // colliderSystem.computeAndNotify(colliders);
 
         initRenderer();
         initScene();
-        initMeshes();
+        // initMeshes();
         handleWindowResize();
 
         var controls = new THREE.DragControls(
@@ -169,44 +227,49 @@
           activeObject = event.object;
           console.log('activeObject: ', activeObject);
           cameraControls.enabled = false;
+          lastPosition = activeObject.position;
+          // boundingBoxes.delete(event.object.parent.id);
         });
         controls.addEventListener('dragend', function(event) {
           event.object.material.emissive.set(0x000000);
+          let currBox = boundingBoxes.get(event.object.parent.id);
+          event.object.position.y = 0;
+
           let name = idMap.get(event.object.parent.id);
           let size = furnitureSizes.get(name);
-          let direction = new THREE.Vector3();
-          let xMin = -4,
-            xMax = 8,
-            zMin = -8,
-            zMax = 12;
-          event.object.getWorldDirection(direction);
-          if (direction.x > 0 && direction.z > 0) {
-            console.log('both pos');
-            if (size == 2) {
-              xMax = 4;
-            }
-            zMax = 4;
-          } else if (direction.x > 0 && direction.z < 0) {
-            console.log('x pos, z neg');
-            if (size == 2) {
-              zMin = -4;
-            }
-            zMax = 4;
-            xMin = -8;
-            xMax = 4;
-          } else if (direction.x < 0 && direction.z > 0) {
-            console.log('x neg, z pos');
-          } else {
-            console.log('both neg');
-            if (size == 2) {
-              xMax = 4;
-            } else {
-              xMax = 8;
-            }
-            zMin = -8;
-            zMax = 4;
-            xMin = -4;
-          }
+          // let direction = new THREE.Vector3();
+          // let xMin = -4,
+          //   xMax = 8,
+          //   zMin = -8,
+          //   zMax = 12;
+          // event.object.getWorldDirection(direction);
+          // if (direction.x > 0 && direction.z > 0) {
+          //   console.log('both pos');
+          //   if (size == 2) {
+          //     xMax = 4;
+          //   }
+          //   zMax = 4;
+          // } else if (direction.x > 0 && direction.z < 0) {
+          //   console.log('x pos, z neg');
+          //   if (size == 2) {
+          //     zMin = -4;
+          //   }
+          //   zMax = 4;
+          //   xMin = -8;
+          //   xMax = 4;
+          // } else if (direction.x < 0 && direction.z > 0) {
+          //   console.log('x neg, z pos');
+          // } else {
+          //   console.log('both neg');
+          //   if (size == 2) {
+          //     xMax = 4;
+          //   } else {
+          //     xMax = 8;
+          //   }
+          //   zMin = -8;
+          //   zMax = 4;
+          //   xMin = -4;
+          // }
           // event.object.position.x = clamp(event.object.position.x, xMin, xMax);
           // event.object.position.z = clamp(event.object.position.z, zMin, zMax);
           if (event.object.position.x < 0)
@@ -229,9 +292,15 @@
               event.object.position.z,
               4
             );
-          event.object.position.y = 0;
+          // currBox.update();
+          // boundingBoxes.forEach(box => {
+          //   if (currBox.intersectsBox(box)) {
+          //     event.object.position.set(lastPosition);
+          //     currBox.update();
+          //   }
+          // });
           console.log(event.object.position);
-          console.log(direction);
+
           cameraControls.enabled = true;
         });
       }
@@ -324,6 +393,40 @@
           );
         });
 
+        // Rug
+        let rugOLoader = new THREE.OBJLoader();
+        let rugMLoader = new THREE.MTLLoader();
+        rugMLoader.setPath('./assets/');
+        rugMLoader.load('rug.mtl', function(mtls) {
+          mtls.preload();
+          rugOLoader.setMaterials(mtls);
+          rugOLoader.setPath('./assets/');
+          rugOLoader.load(
+            'rug.obj',
+            function(obj) {
+              obj.receiveShadow = true;
+              obj.position.set(0, 0, 0);
+              obj.traverse(function(child) {
+                if (child instanceof THREE.Mesh) {
+                  child.receiveShadow = true;
+                  child.material.shininess = 0;
+                }
+              });
+              loadedRug = obj;
+              render();
+            },
+            function(xhr) {
+              if (xhr.lengthComputable) {
+                let percentComplete = (xhr.loaded / xhr.total) * 100;
+                console.log(
+                  'model' + Math.round(percentComplete, 2) + '% downloaded'
+                );
+              }
+            },
+            function() {}
+          );
+        });
+
         initLight();
       }
 
@@ -353,52 +456,44 @@
         scene.add(fillLight);
       }
 
-      function initMeshes() {
-        furnitureNames.forEach(piece => {
-          console.log('about to load: ', piece);
-          loadObject(piece);
-        });
-      }
+      // function initMeshes() {
+      //   furnitureNames.forEach(piece => {
+      //     console.log('about to load: ', piece);
+      //     loadObject(piece);
+      //   });
+      // }
 
       // When thumbnail is clicked, corresponding object is add to the scene.
       // Object is then deleted from the furniture map and reloaded to allow
       // for duplicates.
       function addPiece(name) {
-        let piece = furnitureMap.get(name);
-        scene.add(piece);
-        furnitureObjects.push(piece);
-        console.log(piece);
-        var collider = THREEx.Collider.createFromObject3d(piece);
-        colliders.push(collider);
-
-        // init collider helper
-        var helper = new THREEx.ColliderHelper(collider);
-        helper.material.color.set('green');
-        scene.add(helper);
-
-        collider.addEventListener('contactEnter', function(otherCollider) {
-          console.log(
-            'contactEnter',
-            collider.object3d.name,
-            'with',
-            otherCollider.object3d.name
-          );
-          helper.material.color.set('red');
-        });
-        collider.addEventListener('contactExit', function(otherCollider) {
-          console.log(
-            'contactExit',
-            collider.object3d.name,
-            'with',
-            otherCollider.object3d.name
-          );
-          helper.material.color.set('green');
-        });
-
-        render();
-        furnitureMap.delete(name);
         loadObject(name);
+        // let piece = furnitureMap.get(name);
+        // scene.add(piece);
+        // furnitureObjects.push(piece);
+        // console.log(piece);
+        render();
+        // furnitureMap.delete(name);
+        // loadObject(name);
         handleWindowResize();
+      }
+
+      function loadRug(name) {
+        console.log(rug);
+        if (!rug) {
+          scene.add(loadedRug);
+          rug = loadedRug;
+        }
+        console.log('changing texture');
+        var texture = new THREE.TextureLoader().load(
+          '/assets/textures/' + name + '.png'
+        );
+        var material = new THREE.MeshPhongMaterial({
+          map: texture,
+          shininess: 0
+        });
+        rug.material = material;
+        render();
       }
 
       function swapTexture(name) {
@@ -427,15 +522,32 @@
           objLoader.load(
             name + '.obj',
             function(obj) {
+              // var objBbox = new THREE.Box3().setFromObject(obj);
+              var box = new THREE.BoundingBoxHelper(obj, 0xffff00);
+              box.update();
+              // scene.add(box);
+              // Geometry vertices centering to world axis
+              // let bboxCenter = new THREE.Vector3();
+              // objBbox.getCenter(bboxCenter).clone();
+              // bboxCenter.multiplyScalar(-1);
               obj.traverse(function(child) {
                 if (child instanceof THREE.Mesh) {
                   child.castShadow = true;
                   child.material.shininess = 0;
+                  // child.geometry.translate(
+                  //   bboxCenter.x,
+                  //   bboxCenter.y,
+                  //   bboxCenter.z
+                  // );
                 }
               });
+              boundingBoxes.set(obj.id, box);
               obj.position.set(0, 0, 0);
+              obj.updateMatrixWorld(true);
+              // objBbox.applyMatrix4(obj.matrixWorld);
               furnitureMap.set(name, obj);
-              console.log(name, obj.id);
+              furnitureObjects.push(obj);
+              scene.add(obj);
               idMap.set(obj.id, name);
             },
             function(xhr) {
